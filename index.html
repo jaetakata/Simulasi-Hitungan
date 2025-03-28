@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Pembiayaan Syariah dengan Asuransi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .output {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .output span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Simulasi Pembiayaan Sejahtera iB Amanah</h2>
+
+        <label for="principal">Jumlah Pinjaman (Rp):</label>
+        <input type="number" id="principal" placeholder="Masukkan jumlah pinjaman" required>
+
+        <label for="interestRate">Margin Keuntungan Bank Syariah (%):</label>
+        <input type="number" id="interestRate" placeholder="Masukkan margin keuntungan bank syariah" required>
+
+        <label for="period">Jumlah Periode (Bulan):</label>
+        <input type="number" id="period" placeholder="Masukkan jumlah periode (bulan)" required>
+
+        <label for="insurance">Biaya Asuransi (% dari pinjaman):</label>
+        <input type="number" id="insurance" placeholder="Masukkan biaya asuransi" required>
+
+        <button onclick="calculateAnnuity()">Hitung Pembayaran</button>
+
+        <div class="output" id="output">
+            <!-- Hasil simulasi akan muncul di sini -->
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk memformat angka menjadi format Rupiah
+        function formatRupiah(angka) {
+            let number_string = angka.toString();
+            let sisa = number_string.length % 3;
+            let rupiah = number_string.substr(0, sisa);
+            let ribuan = number_string.substr(sisa).match(/\d{3}/g);
+            
+            if (ribuan) {
+                separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+            
+            return rupiah;
+        }
+
+        function calculateAnnuity() {
+            // Mengambil nilai input dari pengguna
+            const principal = parseFloat(document.getElementById("principal").value);
+            const interestRate = parseFloat(document.getElementById("interestRate").value);
+            const period = parseInt(document.getElementById("period").value);
+            const insuranceRate = parseFloat(document.getElementById("insurance").value);
+
+            // Validasi input
+            if (isNaN(principal) || isNaN(interestRate) || isNaN(period) || isNaN(insuranceRate) || principal <= 0 || interestRate <= 0 || period <= 0 || insuranceRate < 0) {
+                alert("Silakan masukkan nilai yang valid.");
+                return;
+            }
+
+            // Menghitung biaya asuransi
+            const insuranceCost = (insuranceRate / 100) * principal;
+
+            // Menghitung margin keuntungan per bulan (suku bunga syariah per bulan)
+            const monthlyInterestRate = interestRate / 12 / 100;
+
+            // Menghitung cicilan per bulan menggunakan rumus anuitas
+            const monthlyPayment = principal * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, period)) / (Math.pow(1 + monthlyInterestRate, period) - 1);
+
+            // Total pinjaman + biaya asuransi
+            const totalLoanWithInsurance = principal + insuranceCost;
+
+            // Menghitung total pembayaran dengan biaya asuransi
+            const totalPaymentWithInsurance = monthlyPayment * period + insuranceCost;
+
+            // Menghitung total bunga yang dibayar
+            const totalInterest = (monthlyPayment * period) - principal;
+
+            // Menampilkan hasil simulasi dengan format Rupiah
+            document.getElementById("output").innerHTML = `
+                <p>Pinjaman: <span>Rp ${formatRupiah(principal)}</span></p>
+                <p>Margin Keuntungan Bank Syariah: <span>${interestRate}%</span></p>
+                <p>Jumlah Periode: <span>${period} bulan</span></p>
+                <p>Biaya Asuransi: <span>Rp ${formatRupiah(insuranceCost)}</span> (asuransi ${insuranceRate}%)</p>
+                <p>Cicilan per Bulan (tanpa asuransi): <span>Rp ${formatRupiah(monthlyPayment.toFixed(2))}</span></p>
+                <p>Total Pembayaran (termasuk asuransi): <span>Rp ${formatRupiah(totalPaymentWithInsurance.toFixed(2))}</span></p>
+                <p>Total Bunga yang Dibayar: <span>Rp ${formatRupiah(totalInterest.toFixed(2))}</span></p>
+            `;
+        }
+    </script>
+
+</body>
+</html>
